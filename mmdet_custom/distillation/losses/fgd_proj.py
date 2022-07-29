@@ -25,7 +25,7 @@ class FGDPROLoss(nn.Module):
                  name,
                  alpha_fgd=0.001):
         super(FGDPROLoss, self).__init__()
-        self.temp = temp
+        #self.temp = temp
         self.alpha_fgd = alpha_fgd
         
         if student_channels != teacher_channels:
@@ -38,7 +38,6 @@ class FGDPROLoss(nn.Module):
             nn.Conv2d(teacher_channels, teacher_channels, kernel_size=1),
             nn.ReLU(inplace=True), 
             nn.Conv2d(teacher_channels, teacher_channels, kernel_size=1))
-        self.reset_parameters()
 
     def forward(self,
                 preds_S,
@@ -62,100 +61,6 @@ class FGDPROLoss(nn.Module):
             
         return loss
 
-    def get_attention(self, preds, temp):
-        """ preds: Bs*C*W*H """
-        N, C, H, W= preds.shape
-
-        value = torch.abs(preds)
-        # Bs*W*H
-        fea_map = value.mean(axis=1, keepdim=True)
-        S_attention = (H * W * F.softmax((fea_map/temp).view(N,-1), dim=1)).view(N, H, W)
-
-        # Bs*C
-        channel_map = value.mean(axis=2,keepdim=False).mean(axis=2,keepdim=False)
-        C_attention = C * F.softmax(channel_map/temp, dim=1)
-
-        return S_attention, C_attention
-
-
-    def get_fea_loss(self, preds_S, preds_T, Mask_fg, Mask_bg, C_s, C_t, S_s, S_t):
-        loss_mse = nn.MSELoss(reduction='sum')
-        
-        Mask_fg = Mask_fg.unsqueeze(dim=1)
-        Mask_bg = Mask_bg.unsqueeze(dim=1)
-
-        C_t = C_t.unsqueeze(dim=-1)
-        C_t = C_t.unsqueeze(dim=-1)
-
-        S_t = S_t.unsqueeze(dim=1)
-
-        fea_t= torch.mul(preds_T, torch.sqrt(S_t))
-        fea_t = torch.mul(fea_t, torch.sqrt(C_t))
-        fg_fea_t = torch.mul(fea_t, torch.sqrt(Mask_fg))
-        bg_fea_t = torch.mul(fea_t, torch.sqrt(Mask_bg))
-
-        fea_s = torch.mul(preds_S, torch.sqrt(S_t))
-        fea_s = torch.mul(fea_s, torch.sqrt(C_t))
-        fg_fea_s = torch.mul(fea_s, torch.sqrt(Mask_fg))
-        bg_fea_s = torch.mul(fea_s, torch.sqrt(Mask_bg))
-
-        fg_loss = loss_mse(fg_fea_s, fg_fea_t)/len(Mask_fg)
-        bg_loss = loss_mse(bg_fea_s, bg_fea_t)/len(Mask_bg)
-
-        return fg_loss, bg_loss
-
-
-    def get_mask_loss(self, C_s, C_t, S_s, S_t):
-
-        mask_loss = torch.sum(torch.abs((C_s-C_t)))/len(C_s) + torch.sum(torch.abs((S_s-S_t)))/len(S_s)
-
-        return mask_loss
-     
-    
-    def spatial_pool(self, x, in_type):
-        batch, channel, width, height = x.size()
-        input_x = x
-        # [N, C, H * W]
-        input_x = input_x.view(batch, channel, height * width)
-        # [N, 1, C, H * W]
-        input_x = input_x.unsqueeze(1)
-        # [N, 1, H, W]
-        if in_type == 0:
-            context_mask = self.conv_mask_s(x)
-        else:
-            context_mask = self.conv_mask_t(x)
-        # [N, 1, H * W]
-        context_mask = context_mask.view(batch, 1, height * width)
-        # [N, 1, H * W]
-        context_mask = F.softmax(context_mask, dim=2)
-        # [N, 1, H * W, 1]
-        context_mask = context_mask.unsqueeze(-1)
-        # [N, 1, C, 1]
-        context = torch.matmul(input_x, context_mask)
-        # [N, C, 1, 1]
-        context = context.view(batch, channel, 1, 1)
-
-        return context
-
-
-    def get_rela_loss(self, preds_S, preds_T):
-        loss_mse = nn.MSELoss(reduction='sum')
-
-        context_s = self.spatial_pool(preds_S, 0)
-        context_t = self.spatial_pool(preds_T, 1)
-
-        out_s = preds_S
-        out_t = preds_T
-
-        channel_add_s = self.channel_add_conv_s(context_s)
-        out_s = out_s + channel_add_s
-
-        channel_add_t = self.channel_add_conv_t(context_t)
-        out_t = out_t + channel_add_t
-
-        rela_loss = loss_mse(out_s, out_t)/len(out_s)
-        
-        return rela_loss
 
     def get_dis_loss(self, preds_S, preds_T):
         loss_mse = nn.MSELoss(reduction='sum')
@@ -166,19 +71,3 @@ class FGDPROLoss(nn.Module):
         dis_loss = loss_mse(new_fea, preds_T)/N
         #dis_loss = loss_mse(preds_S,preds_T)/N
         return dis_loss
-
-    def last_zero_init(self, m):
-        if isinstance(m, nn.Sequential):
-            constant_init(m[-1], val=0)
-        else:
-            constant_init(m, val=0)
-
-    
-    def reset_parameters(self):
-        kaiming_init(self.conv_mask_s, mode='fan_in')
-        kaiming_init(self.conv_mask_t, mode='fan_in')
-        self.conv_mask_s.inited = True
-        self.conv_mask_t.inited = True
-
-        self.last_zero_init(self.channel_add_conv_s)
-        self.last_zero_init(self.channel_add_conv_t)

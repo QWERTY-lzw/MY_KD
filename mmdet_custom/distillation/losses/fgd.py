@@ -363,7 +363,7 @@ class FeatureLoss(nn.Module):
             hmax.append(torch.ceil(new_boxxes[:, 3]).int())
 
             area = 1.0/(hmax[i].view(1,-1)+1-hmin[i].view(1,-1))/(wmax[i].view(1,-1)+1-wmin[i].view(1,-1))
-            area = area**(1+0.05*(layer - 1))
+            #area = area**(1+0.05*(layer - 1))
             #import ipdb;ipdb.set_trace()
             for j in range(len(gt_bboxes[i])):
                 Mask_fg[i][hmin[i][j]:hmax[i][j]+1, wmin[i][j]:wmax[i][j]+1] = \

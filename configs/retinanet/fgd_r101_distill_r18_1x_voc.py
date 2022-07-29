@@ -1,62 +1,87 @@
 _base_ = './retinanet_r18_fpn_1x_voc.py'
 # model settings
 find_unused_parameters=True
-alpha_fgd=1e-6
+temp=0.5
+alpha_fgd=0.00001
+beta_fgd=0.000005
+gamma_fgd=0.000005
+lambda_fgd=0.0000005
 distiller = dict(
     type='DetectionDistiller',
     teacher_pretrained = '/root/kd_fpn/work_dirs/retinanet_r101_fpn_1x_voc/latest.pth',
+    init_student = False,
     distill_cfg = [ dict(student_module = 'neck.fpn_convs.4.conv',
                          teacher_module = 'neck.fpn_convs.4.conv',
                          output_hook = True,
-                         methods=[dict(type='FGDPROLoss',
-                                       name='loss_mgd_fpn_4',
+                         methods=[dict(type='FeatureLoss',
+                                       name='loss_fgd_fpn_4',
                                        student_channels = 256,
                                        teacher_channels = 256,
+                                       temp = temp,
                                        alpha_fgd=alpha_fgd,
+                                       beta_fgd=beta_fgd,
+                                       gamma_fgd=gamma_fgd,
+                                       lambda_fgd=lambda_fgd,
                                        )
                                 ]
                         ),
                     dict(student_module = 'neck.fpn_convs.3.conv',
                          teacher_module = 'neck.fpn_convs.3.conv',
                          output_hook = True,
-                         methods=[dict(type='FGDPROLoss',
-                                       name='loss_mgd_fpn_3',
+                         methods=[dict(type='FeatureLoss',
+                                       name='loss_fgd_fpn_3',
                                        student_channels = 256,
                                        teacher_channels = 256,
+                                       temp = temp,
                                        alpha_fgd=alpha_fgd,
+                                       beta_fgd=beta_fgd,
+                                       gamma_fgd=gamma_fgd,
+                                       lambda_fgd=lambda_fgd,
                                        )
                                 ]
                         ),
                     dict(student_module = 'neck.fpn_convs.2.conv',
                          teacher_module = 'neck.fpn_convs.2.conv',
                          output_hook = True,
-                         methods=[dict(type='FGDPROLoss',
-                                       name='loss_mgd_fpn_2',
+                         methods=[dict(type='FeatureLoss',
+                                       name='loss_fgd_fpn_2',
                                        student_channels = 256,
                                        teacher_channels = 256,
+                                       temp = temp,
                                        alpha_fgd=alpha_fgd,
+                                       beta_fgd=beta_fgd,
+                                       gamma_fgd=gamma_fgd,
+                                       lambda_fgd=lambda_fgd,
                                        )
                                 ]
                         ),
                     dict(student_module = 'neck.fpn_convs.1.conv',
                          teacher_module = 'neck.fpn_convs.1.conv',
                          output_hook = True,
-                         methods=[dict(type='FGDPROLoss',
-                                       name='loss_mgd_fpn_1',
+                         methods=[dict(type='FeatureLoss',
+                                       name='loss_fgd_fpn_1',
                                        student_channels = 256,
                                        teacher_channels = 256,
+                                       temp = temp,
                                        alpha_fgd=alpha_fgd,
+                                       beta_fgd=beta_fgd,
+                                       gamma_fgd=gamma_fgd,
+                                       lambda_fgd=lambda_fgd,
                                        )
                                 ]
                         ),
                     dict(student_module = 'neck.fpn_convs.0.conv',
                          teacher_module = 'neck.fpn_convs.0.conv',
                          output_hook = True,
-                         methods=[dict(type='FGDPROLoss',
-                                       name='loss_mgd_fpn_0',
+                         methods=[dict(type='FeatureLoss',
+                                       name='loss_fgd_fpn_0',
                                        student_channels = 256,
                                        teacher_channels = 256,
+                                       temp = temp,
                                        alpha_fgd=alpha_fgd,
+                                       beta_fgd=beta_fgd,
+                                       gamma_fgd=gamma_fgd,
+                                       lambda_fgd=lambda_fgd,
                                        )
                                 ]
                         ),
