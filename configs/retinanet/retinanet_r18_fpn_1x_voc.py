@@ -1,4 +1,6 @@
+_base_ = './retinanet_r18_fpn_1x_coco.py'
 # dataset settings
+model = dict(bbox_head=dict(num_classes=20))
 dataset_type = 'VOCDataset'
 data_root = 'data/VOCdevkit/'
 img_norm_cfg = dict(
@@ -29,7 +31,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=2,
+    samples_per_gpu=16,
     workers_per_gpu=2,
     train=dict(
         type='RepeatDataset',
@@ -52,3 +54,6 @@ data = dict(
         img_prefix=data_root + 'VOC2007/',
         pipeline=test_pipeline))
 evaluation = dict(interval=1, metric='mAP')
+runner = dict(type='EpochBasedRunner', max_epochs=4)
+optimizer = dict(type='SGD', lr=0.001, momentum=0.9, weight_decay=0.0001)
+optimizer_config=dict(_delete_=True, grad_clip=dict(max_norm=35, norm_type=2))
