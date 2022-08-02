@@ -84,7 +84,7 @@ class ClassificationDistiller(BaseClassifier):
         with torch.no_grad():
             fea_t = self.teacher.extract_feat(img, stage='backbone')
 
-        loss_name = 'loss_mgd'
+        loss_name = 'loss_simkd'
         student_loss[loss_name] = self.distill_losses[loss_name](fea_s[-1], fea_t[-1]) 
 
         return student_loss
