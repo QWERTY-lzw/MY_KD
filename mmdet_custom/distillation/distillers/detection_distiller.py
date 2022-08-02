@@ -147,8 +147,8 @@ class DetectionDistiller(BaseDetector):
             teacher_feat = buffer_dict[teacher_module]
             for item_loss in item_loc.methods:
                 loss_name = item_loss.name
-                student_loss[loss_name] = self.distill_losses[loss_name](student_feat, teacher_feat, gt, scale_y, scale_x, loss_name,img_metas)
-                #student_loss[loss_name] = self.distill_losses[loss_name](student_feat,teacher_feat)
+                #student_loss[loss_name] = self.distill_losses[loss_name](student_feat, teacher_feat, gt, scale_y, scale_x, loss_name,img_metas)
+                student_loss[loss_name] = self.distill_losses[loss_name](student_feat,teacher_feat)
         return student_loss
     
     def simple_test(self, img, img_metas, **kwargs):
