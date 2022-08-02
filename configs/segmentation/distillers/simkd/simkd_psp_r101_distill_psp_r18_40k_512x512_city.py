@@ -1,6 +1,7 @@
 _base_ = [
-    '../pspnet/pspnet_r18-d8_512x512_40k_cityscapes.py'
+    '../../pspnet/pspnet_r18-d8_512x512_40k_cityscapes.py'
 ]
+
 # model settings
 find_unused_parameters=True
 alpha_simkd=2e-5
@@ -20,5 +21,5 @@ distiller = dict(
                    ]
     )
 
-student_cfg = 'configs/pspnet/pspnet_r18-d8_512x512_40k_cityscapes.py'
-teacher_cfg = 'configs/pspnet/pspnet_r101-d8_512x1024_40k_cityscapes.py'
+student_cfg = 'configs/segmentation/pspnet/pspnet_r18-d8_512x512_40k_cityscapes.py'
+teacher_cfg = 'configs/segmentation/pspnet/pspnet_r101-d8_512x1024_40k_cityscapes.py'
