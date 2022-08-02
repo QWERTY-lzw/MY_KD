@@ -1,10 +1,10 @@
-_base_ = './retinanet_r50_fpn_2x_coco.py'
+_base_ = './gfl_r50_fpn_1x_coco.py'
 # model settings
 find_unused_parameters=True
 alpha_simkd=2e-5
 distiller = dict(
     type='DetectionDistiller',
-    teacher_pretrained = 'https://download.openmmlab.com/mmdetection/v2.0/retinanet/retinanet_x101_64x4d_fpn_mstrain_3x_coco/retinanet_x101_64x4d_fpn_mstrain_3x_coco_20210719_051838-022c2187.pth',
+    teacher_pretrained = 'https://download.openmmlab.com/mmdetection/v2.0/gfl/gfl_r101_fpn_mstrain_2x_coco/gfl_r101_fpn_mstrain_2x_coco_20200629_200126-dd12f847.pth',
     distill_cfg = [ dict(student_module = 'neck.fpn_convs.4.conv',
                          teacher_module = 'neck.fpn_convs.4.conv',
                          output_hook = True,
@@ -64,9 +64,13 @@ distiller = dict(
                    ]
     )
 
-student_cfg = 'configs/retinanet/retinanet_r50_fpn_2x_coco.py'
-teacher_cfg = 'configs/retinanet/retinanet_x101_64x4d_fpn_1x_coco.py'
+student_cfg = 'configs/detection/gfl_r50_fpn_1x_coco.py'
+teacher_cfg = 'configs/detection/gfl_r101_fpn_mstrain_2x_coco.py'
 optimizer_config = dict(_delete_=True, grad_clip=dict(max_norm=35, norm_type=2))
+data_root = 'data/coco/'
+data = dict(
+    samples_per_gpu=4,
+    workers_per_gpu=2,)
 '''
 fp16 = dict(loss_scale=512.)
 dataset_type = 'CocoDataset'
