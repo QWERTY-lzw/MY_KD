@@ -114,7 +114,7 @@ class SegmentationDistiller(BaseSegmentor):
                 student_feat, img_metas, gt_semantic_seg)
             student_loss.update(loss_aux)
 
-        loss_name = 'loss_mgd_fea'
+        loss_name = 'loss_simkd_fea'
         student_loss[loss_name] = self.distill_losses[loss_name](student_feat[-1],fea_t[-1].detach())
         
         if self.use_logit:
